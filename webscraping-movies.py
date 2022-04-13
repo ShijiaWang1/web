@@ -1,4 +1,6 @@
 
+from email import header
+from platform import release
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 import openpyxl as xl
@@ -22,4 +24,63 @@ print(title.text)
 ##
 ##
 ##
+movie_table = soup.find('table')
+#print(movie_table)
 
+movie_rows = movie_table.findAll('tr')
+
+#print(movie_rows[1])
+
+
+
+
+wb= xl.Workbook()
+
+#assign the current sheet to the 'MySheet' worksheet object variable
+MySheet = wb.active
+
+MySheet.title ='Box Office Report'
+
+MySheet['A1']='No. Moive Title'
+MySheet['A1'].font= Font(bold=True)
+MySheet['B1']='Movie Title'
+MySheet['B1'].font= Font(bold=True)
+MySheet['C1']='Release date'
+MySheet['C1'].font= Font(bold=True)
+MySheet['D1']='Gross'
+MySheet['D1'].font= Font(bold=True)
+MySheet['E1']='Total Gross'
+MySheet['E1'].font= Font(bold=True)
+MySheet['F1']='% of Total Gross'
+MySheet['F1'].font= Font(bold=True)
+
+MySheet.column_dimensions['A'].width =15
+MySheet.column_dimensions['B'].width =15
+MySheet.column_dimensions['C'].width =15
+MySheet.column_dimensions['D'].width =16
+MySheet.column_dimensions['E'].width =20
+MySheet.column_dimensions['F'].width =26
+
+header_font =Font(size=16,bold=True)
+
+for x in range(1,6):
+    td= movie_rows[x].findAll('td')
+    ranking = td[0].text
+    title = td[1].text
+    gross =int(td[5].text.replace(",","").replace("$",""))
+    total_gross = int(td[7].text.replace(",","").replace("$",""))
+    release_date = td[8].text
+
+    percent_gross= round((gross/total_gross)*100,2)
+
+    MySheet['A' + str(x+1)] =ranking
+    MySheet['B' + str(x+1)] =title
+    MySheet['C' + str(x+1)] =release_date
+    MySheet['D' + str(x+1)] = gross
+    MySheet['E' + str(x+1)] =total_gross
+    MySheet['F' + str(x+1)] =str(percent_gross)+ '%'
+
+    for cell in MySheet[1:1]:
+        cell.font= header_font
+
+wb.save('moive.xlsx')
